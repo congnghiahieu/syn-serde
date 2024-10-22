@@ -380,10 +380,31 @@ mod value {
 
     pub(crate) fn to_literal(s: &str) -> Literal {
         let stream = s.parse::<TokenStream>().unwrap();
-        match stream.into_iter().next().unwrap() {
-            TokenTree::Literal(l) => l.ref_into(),
-            _ => unreachable!(),
-        }
+        let mut iter = stream.into_iter();
+        let mut s = String::new();
+
+        match iter.next().unwrap() {
+            TokenTree::Punct(p) => {
+                let next = iter.next().unwrap();
+                match next {
+                    TokenTree::Literal(l) => {
+                        s.push_str(p.to_string().as_str());
+                        s.push_str(l.to_string().as_str());
+                    }
+                    _ => {
+                        unreachable!()
+                    }
+                }
+            }
+            TokenTree::Literal(l) => {
+                s.push_str(l.to_string().as_str());
+            }
+            _ => {
+                unreachable!()
+            }
+        };
+
+        Literal { text: s }
     }
 }
 
